@@ -1,0 +1,24 @@
+services:
+  qso-mutual:
+    build: .
+    image: qso-mutual:latest
+    container_name: qso-mutual
+    restart: unless-stopped
+    environment:
+      # SQLite 数据库文件位置（容器内路径，挂载到命名卷持久化）
+      QSO_DATABASE: /data/qso.db
+      QSO_PORT: "8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - qso-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  qso-data:
+    driver: local
